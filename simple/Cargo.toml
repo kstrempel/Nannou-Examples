@@ -1,0 +1,8 @@
+[package]
+name = "hunt"
+version = "0.1.0"
+authors = ["Kai Strempel kstrempel@gmail.com"]
+edition = "2021"
+
+[dependencies]
+nannou = "0.17"
