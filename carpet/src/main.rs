@@ -3,7 +3,7 @@ use rand::distributions::WeightedIndex;
 use rand::prelude::*;
 
 fn main() {
-    nannou::app(model).run();
+    nannou::app(model).loop_mode(LoopMode::Wait).run();
 }
 
 #[derive(Copy, Clone)]
@@ -97,7 +97,6 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
     let shadow = -10.0;
 
-    
     draw.background().color(BLACK);
     let rect = model.area.pad(-50.0);
     draw.rect()
