@@ -24,11 +24,8 @@ struct Thing {
 struct Model {
     _window: window::Id,
     things: Vec<Thing>,
-    background: Hsl
-}
-
-fn padding(rect: &Rect<f32>, gap: f32) -> Rect<f32> {
-    Rect::from_x_y_w_h(rect.x(), rect.y(), rect.w() - gap, rect.h() - gap)
+    background: Hsl,
+    area: Rect<f32>,
 }
 
 fn update_model(r: Rect<f32>) -> Vec<Thing> {
@@ -59,7 +56,7 @@ fn update_model(r: Rect<f32>) -> Vec<Thing> {
             for rect in rect.subdivisions_iter() {
                 for rect in rect.subdivisions_iter() {
                     let thing = Thing {
-                        rect: padding(&rect, 20.0),
+                        rect: rect.pad(10.0),
                         color: color_choices[color_dist.sample(&mut rng)],
                         drawtype: drawing_choices[drawings_dist.sample(&mut rng)],
                     };
@@ -82,27 +79,42 @@ fn model(app: &App) -> Model {
         .build()
         .unwrap();
 
-    let r = padding(&app.window_rect(), 100.0);
+    let r = app.window_rect().pad(100.0);
     Model {
         _window,
         things: update_model(r),
-        background: hsl(random_f32(), 0.5, 0.2)
+        background: hsl(random_f32(), 0.5, 0.2),
+        area: r,
     }
 }
 
-fn update(app: &App, model: &mut Model, _mouse_button: MouseButton) {
-    let r = padding(&app.window_rect(), 100.0);
-    model.things = update_model(r);
+fn update(_app: &App, model: &mut Model, _mouse_button: MouseButton) {
+    model.things = update_model(model.area);
     model.background = hsl(random_f32(), 0.5, 0.2);
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
-    draw.background().color(model.background);
+    let shadow = -10.0;
+
+    
+    draw.background().color(BLACK);
+    let rect = model.area.pad(-50.0);
+    draw.rect()
+        .x_y(rect.x(), rect.y())
+        .w_h(rect.w(), rect.h())
+        .color(model.background);
+
     for t in model.things.iter() {
         let r = t.rect;
         match t.drawtype {
             ThingType::BOX => {
+                draw.rect()
+                    .x_y(r.x() + shadow, r.y() + shadow)
+                    .w_h(r.w(), r.h())
+                    .no_fill()
+                    .stroke(BLACK)
+                    .stroke_weight(7.0);
                 draw.rect()
                     .x_y(r.x(), r.y())
                     .w_h(r.w(), r.h())
@@ -117,6 +129,12 @@ fn view(app: &App, model: &Model, frame: Frame) {
                     .color(t.color);
             }
             ThingType::CIRCLE => {
+                draw.ellipse()
+                    .x_y(r.x() + shadow, r.y() + shadow)
+                    .radius(r.w() / 2.0)
+                    .no_fill()
+                    .stroke(BLACK)
+                    .stroke_weight(7.0);
                 draw.ellipse()
                     .x_y(r.x(), r.y())
                     .radius(r.w() / 2.0)
