@@ -32,7 +32,9 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
 
         rad += 0.01;
     }
-    result.push(circle_inner.extend(circle_outer));
+    
+    let circle_polygons = [circle_inner,circle_outer].concat();
+    result.push(circle_polygons);
     model.sectors = result;
 }
 
