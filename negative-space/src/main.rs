@@ -1,4 +1,5 @@
 use nannou::prelude::*;
+use std::cmp;
 
 fn main() {
     nannou::app(model).update(update).run();
@@ -8,13 +9,13 @@ struct Thing {
     sectors: Vec<Vec<Point2>>,
     rotate: f32,
     speed: f32,
-    color: Hsl
+    color: Hsl,
 }
 
 struct Model {
     _window: window::Id,
     things: Vec<Thing>,
-    rotate: f32
+    rotate: f32,
 }
 
 fn broken_circle(radius: f32, size: f32) -> Vec<Vec<Point2>> {
@@ -40,28 +41,23 @@ fn broken_circle(radius: f32, size: f32) -> Vec<Vec<Point2>> {
 }
 
 fn model(app: &App) -> Model {
-    let _window = app
-        .new_window()
-        .size(512, 600)
-        .view(view)
-        .build()
-        .unwrap();
+    let _window = app.new_window().size(600, 600).view(view).build().unwrap();
 
-    let max_radius = (app.window_rect().h() / 1.0) as i32;
+    let max_radius = cmp::max(app.window_rect().h() as u32, app.window_rect().w() as u32);
     let mut result = Vec::new();
-    for i in (50..max_radius).step_by(10) {
-        result.push(Thing { 
-            sectors: broken_circle(i as f32, 10.0),
-            rotate: random_f32() * TAU,
+    for i in (5..max_radius).step_by(3) {
+        result.push(Thing {
+            sectors: broken_circle(i as f32, 3.0),
+            rotate: 0.0,
             color: hsl(random_f32(), 0.7, 0.1),
-            speed: (random_range(1.0, 5.0) as u32) as f32
+            speed: random_range(1.0, 8.0),
         });
     }
 
     Model {
         _window,
         things: result,
-        rotate: 0.0
+        rotate: 0.0,
     }
 }
 
@@ -72,8 +68,8 @@ fn update(_app: &App, model: &mut Model, _update: Update) {
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
     let wr = app.window_rect();
-    let left  = Rect::from_x_y_w_h(-1.0 * wr.w() / 2.0, 0.0, wr.w(), wr.h());
-    let right = Rect::from_x_y_w_h( wr.w() / 2.0, 0.0, wr.w(), wr.h());
+    let left = Rect::from_x_y_w_h(-1.0 * wr.w() / 2.0, 0.0, wr.w(), wr.h());
+    let right = Rect::from_x_y_w_h(wr.w() / 2.0, 0.0, wr.w(), wr.h());
 
     draw.scissor(left)
         .rect()
@@ -85,7 +81,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
         .rect()
         .x_y(right.x(), right.y())
         .w_h(right.w(), right.h())
-        .color(hsla(0.0,1.0,0.0,0.1));
+        .color(hsla(0.0, 1.0, 0.0, 0.3));
 
     for t in model.things.iter() {
         for s in t.sectors.iter() {
